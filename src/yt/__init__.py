@@ -32,6 +32,8 @@ def main():
     """
     Launch yt, allowing user to specify player.
     """
+    
+    global DEVELOPER_KEY
 
     # Allow the user to specify whether to use mplayer or omxplayer for playing videos.
     parser = argparse.ArgumentParser(prog='yt',formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -39,8 +41,10 @@ def main():
     parser.add_argument("--player",default=MPLAYER_MODE,choices=[MPLAYER_MODE,OMXPLAYER_MODE,MPV_MODE],help="specifies what program to use to play videos")
     parser.add_argument("--novideo", default=False, action='store_true', help="Play selection while suppressing video e.g. Audio only NOTE: This flag is ignored when using omxplayer")
     parser.add_argument("--bandwidth", help="Choose prefered minimum video quality. This value will be prefered video quality and will increment up if chosen setting is unavailable. Example: \"--bandwidth 5\" will try and use codec #5 (240p) and if unavailable, will step up to codec #18 (270p/360p). Valid choices from low to high are \"17, 5, 18, 43\"", type=int)
+    parser.add_argument("--apikey", default=DEVELOPER_KEY, help="Youtube Data API key. See https://developers.google.com/youtube/registering_an_application")
     
     args = parser.parse_args(sys.argv[1:])
+    DEVELOPER_KEY = args.apikey
 
     # We are now passing all arguments to the Ui object instead of just the player choice. This allows adding new options.
     ui = Ui(args)
