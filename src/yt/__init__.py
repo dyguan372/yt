@@ -1,15 +1,12 @@
-from __future__ import print_function
-
 import curses
 import curses.textpad
-import curses.wrapper
 import json
 import locale
 import re
 import subprocess
 import sys
-import urllib
-import urllib2
+import urllib.request, urllib.parse, urllib.error
+import urllib.request, urllib.error, urllib.parse
 import argparse
 import time
 
@@ -187,7 +184,7 @@ class Ui(object):
             raise ScreenSizeError()
 
         self._help_bar.erase()
-        self._help_bar.addstr(0, 0, ('%s:' % (prompt,)).encode(self._code))
+        self._help_bar.addstr(0, 0, ('%s:' % (prompt,)))
         self._help_bar.refresh()
         input_win = curses.newwin(1, w-len(prompt)-2, h-1, len(prompt)+2)
         input_win.bkgd(' ', self._bar_attr)
@@ -203,7 +200,7 @@ class Ui(object):
 
     def _get_feed(self, count, pagetoken):
         count = min(count, 25) # 25 is the max number of results we can get in one go
-        self._show_message(u'Talking to YouTube\u2026')
+        self._show_message('Talking to YouTube\u2026')
         self._last_feed = self._feed['fetch_cb'](count, self._ordering, pagetoken)
         return self._last_feed
 
@@ -226,7 +223,7 @@ class Ui(object):
         # Update the status bar
         self._status_bar.erase()
         if w > 2:
-            self._status_bar.addstr(0, 0, truncate(self._status, w-1).encode(self._code))
+            self._status_bar.addstr(0, 0, truncate(self._status, w-1))
         self._status_bar.refresh()
 
     def _run_pager(self):
@@ -359,7 +356,7 @@ class Ui(object):
         for item in items[:n_to_show]:
             num_str = ('%'+str(maxw)+'i') % (n,)
             if w > maxw:
-                self._main_win.addstr(y, 0, num_str.encode(self._code), curses.color_pair(4) | curses.A_BOLD)
+                self._main_win.addstr(y, 0, num_str, curses.color_pair(4) | curses.A_BOLD)
             self._add_video_item(y, maxw + 1, w-maxw-1, item)
             n += 1
             y += 3
@@ -374,25 +371,23 @@ class Ui(object):
 
         duration = item['duration'] if 'duration' in item else '' 
         duration = duration[+2:]
-        comments = int(item['commentCount']) if 'commentCount' in item else 0
         views = int(item['viewCount']) if 'viewCount' in item else 0
 
         # Show the title and uploader, prioritising the title
         if len(uploader) > w:
-            self._main_win.addstr(y,x,truncate(title, w).encode(self._code), self._title_attr)
+            self._main_win.addstr(y,x,truncate(title, w), self._title_attr)
         else:
-            self._main_win.addstr(y,x,truncate(title, w-len(uploader)).encode(self._code), self._title_attr)
-            self._main_win.addstr(y,x+w-len(uploader), uploader.encode(self._code), self._uploader_attr)
+            self._main_win.addstr(y,x,truncate(title, w-len(uploader)), self._title_attr)
+            self._main_win.addstr(y,x+w-len(uploader), uploader, self._uploader_attr)
 
         desc = item['snippet']['description'] 
         if desc is None or len(desc.strip()) == 0:
             desc = 'No description'
         desc = re.sub(r'[\n\r]', r' ', desc)
-        self._main_win.addstr(y+1,x,truncate(desc, w).encode(self._code), curses.color_pair(2))
+        self._main_win.addstr(y+1,x,truncate(desc, w), curses.color_pair(2))
         self._add_table_row([
                 ('d', '%s' % duration),
                 ('v', number(views)),
-                ('c', number(comments)),
             ], y+2, x, w, curses.color_pair(3) | curses.A_DIM, max_width=40)
 
     def _show_message(self, s):
@@ -404,7 +399,7 @@ class Ui(object):
         winw = min(len(s)+2, w)
 
         mw = self._setup_message_window(3, winw)
-        mw.addstr(1,1, truncate(s,winw-2).encode(self._code))
+        mw.addstr(1,1, truncate(s,winw-2))
         mw.refresh()
 
     def _stream_message(self, fo, title=""):
@@ -422,11 +417,11 @@ class Ui(object):
 
         if title != "":
             title = " " + title + " "
-            mw.addstr(0, (winw - len(title))//2, title.encode(self._code))
+            mw.addstr(0, (winw - len(title))//2, title)
             mw.refresh()
 
         status = " Press ctrl-c to cancel "
-        mw.addstr(winh-1, (winw - len(status))//2, status.encode(self._code))
+        mw.addstr(winh-1, (winw - len(status))//2, status)
         mw.refresh()
 
         line = 1
@@ -441,7 +436,7 @@ class Ui(object):
             # If we're done, display close message and stop
             if ch == '' and fo.poll() != None:
                 close_message = " Press a key to close "
-                mw.addstr(winh-1, (winw - len(close_message))//2, close_message.encode(self._code))
+                mw.addstr(winh-1, (winw - len(close_message))//2, close_message)
                 mw.refresh()
                 c = self._main_win.getch()
                 break
@@ -456,7 +451,7 @@ class Ui(object):
             mw.addstr(line, 1, " " * (winw-2))
 
             # Display our line
-            mw.addstr(line, 1, truncate(linecontent, winw-2).encode(self._code))
+            mw.addstr(line, 1, truncate(linecontent, winw-2))
             mw.refresh()
             linecontent = ""
 
@@ -486,7 +481,7 @@ class Ui(object):
             cell_w = min(cell_w, max_width)
         for k,v in data:
             if x < w:
-                win.addstr(y, x, truncate('%s:%s' % (k,v), min(w-x, cell_w)).encode(self._code), attr)
+                win.addstr(y, x, truncate('%s:%s' % (k,v), min(w-x, cell_w)), attr)
             x += cell_w
 
 def truncate(s, n):
@@ -494,7 +489,7 @@ def truncate(s, n):
         return s
     if(n < 1):
         return ''
-    return s[:(n-1)] + u'\u2026'
+    return s[:(n-1)] + '\u2026'
 
 def duration(n):
     if n < 60*60:
@@ -546,17 +541,17 @@ def play_url_mplayer(url,novideo):
   
     if novideo:
       player = subprocess.Popen(
-            ['mplayer', '-quiet', '-novideo', '--', url.decode('UTF-8').strip()],
+            ['mplayer', '-quiet', '-novideo', '--', url.strip()],
             stdout = subprocess.PIPE, stderr = subprocess.PIPE)
     else:
       player = subprocess.Popen(
-            ['mplayer', '-quiet', '', '--', url.decode('UTF-8').strip()],
+            ['mplayer', '-quiet', '', '--', url.strip()],
             stdout = subprocess.PIPE, stderr = subprocess.PIPE)
     player.wait()
         
 def play_url_omxplayer(url,audio):
     player = subprocess.Popen(
-            ['omxplayer', '-o%s' % audio, url.decode('UTF-8').strip()],
+            ['omxplayer', '-o%s' % audio, url.strip()],
             stdout = subprocess.PIPE, stderr = subprocess.PIPE)
     player.wait()
 
@@ -585,12 +580,11 @@ def get_video_info(search_results):
             'id': video_ids,
             'key': DEVELOPER_KEY,
         }
-        video_results  = json.load(urllib2.urlopen('%s?%s' % (url, urllib.urlencode(query))))
+        video_results  = load_web_response_json(urllib.request.urlopen('%s?%s' % (url, urllib.parse.urlencode(query))))
         count = 0
         for video_item in video_results["items"]:
           search_results["items"][count]["duration"] = video_item["contentDetails"]["duration"]
           search_results["items"][count]["viewCount"] = video_item["statistics"]["viewCount"]
-          search_results["items"][count]["commentCount"] = video_item["statistics"]["commentCount"]
           count += 1
         return search_results
 
@@ -606,7 +600,7 @@ def search(terms):
             'type': 'video',
             'key': DEVELOPER_KEY,
         }
-        search_results = json.load(urllib2.urlopen('%s?%s' % (url, urllib.urlencode(query))))
+        search_results = load_web_response_json(urllib.request.urlopen('%s?%s' % (url, urllib.parse.urlencode(query))))
 
         return get_video_info(search_results)
 
@@ -626,14 +620,17 @@ def standard_feed(feed_name):
             'type': 'video',
             'key': DEVELOPER_KEY,
         }
-        search_results = json.load(urllib2.urlopen('%s?%s' % (url, urllib.urlencode(query))))
+        search_results = load_web_response_json(urllib.request.urlopen('%s?%s' % (url, urllib.parse.urlencode(query))))
 
         return get_video_info(search_results)
 
     feed = { 'fetch_cb': fetch_cb, 'description': 'standard feed' }
     return feed
                  
-
+def load_web_response_json(response):
+    payload = response.read()
+    encoding = response.info().get_content_charset('utf-8')
+    return json.loads(payload.decode(encoding))
 
 # Make it easy to run module by itself without using external tools to deploy it and
 # create additional launch scripts.
