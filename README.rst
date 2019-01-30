@@ -22,20 +22,6 @@ or, if you're using a Raspberry Pi, using ``omxplayer``::
 Installation
 ------------
 
-From PyPi (easier!)
-~~~~~~~~~~~~~~~~~~~
-
-::
-
-    # Install dependencies
-    sudo apt-get install youtube-dl
-    # Ensure using latest version of youtube-dl to keep up with YouTube API changes
-    sudo youtube-dl -U
-
-    # Install from PyPi
-    sudo apt-get install python-setuptools
-    sudo easy_install whitey
-
 From GitHub
 ~~~~~~~~~~~
 
@@ -48,17 +34,10 @@ From GitHub
 
     # Install from GitHub
     sudo apt-get install python-setuptools
-    git clone https://github.com/rjw57/yt.git
+    git clone https://github.com/dyguan372/yt.git
     cd yt
-    sudo python setup.py install
+    sudo python3 setup.py install
 
-One line install for the Raspberry Pi
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-::
-
-    curl -L https://github.com/rjw57/yt/raw/master/tools/install-pi.sh | sh
-                        
 Dependencies
 ------------
 
